@@ -46,3 +46,7 @@ class Inspector:
     def get_random_component_for_inspector(self):
         number = randrange(1000)
         return self.components[number % len(self.components)]
+
+    def get_random_data(self, data_array):
+        index = randrange(len(data_array))
+        return data_array[index]
