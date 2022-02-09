@@ -1,29 +1,14 @@
-from random import randrange
+import multiprocessing
+import threading
+from concurrent.futures import thread
+from decimal import Decimal
+from multiprocessing import Pool
 
 from Buffer import Buffer
 from Component import Component
+from FileReader import ws1, ws2, ws3
 from Inspector import Inspector
 from WorkStation import WorkStation
-
-
-def read_from_file(file_name):
-    time_data = []
-    file = open("data/" + file_name, 'r')
-    while 1:
-        line = file.readline()
-        if line.rstrip() == '':
-            break
-        time_data.append(float(line.rstrip()))
-    return time_data
-
-
-# read data from dat file
-insp1 = read_from_file("servinsp1.dat")
-insp22 = read_from_file("servinsp22.dat")
-insp23 = read_from_file("servinsp23.dat")
-ws1 = read_from_file("ws1.dat")
-ws2 = read_from_file("ws2.dat")
-ws3 = read_from_file("ws3.dat")
 
 
 class Factory:
@@ -35,9 +20,9 @@ class Factory:
         self.c3 = Component("C3")
 
         # create instances for three workstations
-        self.workstation1 = WorkStation("W1")
-        self.workstation2 = WorkStation("W2")
-        self.workstation3 = WorkStation("W3")
+        self.workstation1 = WorkStation("W1", ws1)
+        self.workstation2 = WorkStation("W2", ws2)
+        self.workstation3 = WorkStation("W3", ws3)
 
         # create instances for buffers
         # the two numbers x, y indicates the workstation number W(x) and component number C(y)
@@ -71,10 +56,52 @@ class Factory:
         self.inspector2.add_buffer(self.buffer33)
 
     def simulation(self):
-        self.inspector1.inspection(self.c1, self.insp1.pop(0))
+        current_time = Decimal(0)
+        for x in range(10):
+            if current_time >= self.inspector1.get_complete_time():
+                component1 = self.inspector1.get_random_component_for_inspector()
+                temp_time1 = self.inspector1.process(current_time, component1)
+                print("after inspector1 process: "+str(temp_time1))
+            else:
+                print("Inspector 1 is still working")
+
+            if current_time >= self.inspector2.get_complete_time():
+                component2 = self.inspector2.get_random_component_for_inspector()
+                temp_time2 = self.inspector2.process(current_time, component2)
+                print("after inspector2 process: " + str(temp_time2))
+            else:
+                print("Inspector 2 is still working")
+
+            temp_current_time = min(temp_time1, temp_time2)
+
+            if temp_current_time == temp_time1:
+                self.inspector1.send_component(component1)
+            else:
+                self.inspector2.send_component(component2)
+
+            temp_ws1 = self.workstation1.process(temp_current_time)
+            print("after ws1 process: " + str(temp_ws1))
+            temp_ws2 = self.workstation2.process(temp_current_time)
+            print("after ws2 process: " + str(temp_ws2))
+            temp_ws3 = self.workstation3.process(temp_current_time)
+            print("after ws3 process: " + str(temp_ws3))
+            temp_times = [temp_time1, temp_time2, temp_ws1, temp_ws2, temp_ws3]
+            temp_times.sort()
+            if current_time != temp_current_time:
+                for i in range(temp_times.count(temp_current_time)-1):
+                    temp_times.remove(temp_current_time)
+                if temp_times[0]==temp_time1 or temp_times[0]==temp_time2:
+                    current_time = temp_times[0]
+                else:
+                    current_time += temp_times[0]
+            else:
+                for i in range(temp_times.count(temp_current_time)):
+                    temp_times.remove(temp_current_time)
+                current_time = temp_times[0]
+
+            print("\n\nnew current time is: "+str(current_time))
 
 
 if __name__ == '__main__':
     factory = Factory()
-    data = read_from_file("servinsp1.dat")
-    print(data)
+    factory.simulation()
