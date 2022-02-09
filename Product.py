@@ -1,3 +1,7 @@
+"""
+Simple Product class, to dedicate the different product would be produced
+"""
+
 
 class Product:
 

@@ -1,8 +1,4 @@
-import multiprocessing
-import threading
-from concurrent.futures import thread
 from decimal import Decimal
-from multiprocessing import Pool
 
 from Buffer import Buffer
 from Component import Component
@@ -10,9 +6,14 @@ from FileReader import ws1, ws2, ws3
 from Inspector import Inspector
 from WorkStation import WorkStation
 
+"""
+Class Factory, to do the main simulation work, initialize the instances and run simulation
+"""
+
 
 class Factory:
 
+    # initialize the Factory and create all instances.
     def __init__(self):
         # create instances for three components
         self.c1 = Component("C1")
@@ -55,13 +56,14 @@ class Factory:
         self.inspector2.add_buffer(self.buffer22)
         self.inspector2.add_buffer(self.buffer33)
 
+    # simulate the whole simulation, need debug for future
     def simulation(self):
         current_time = Decimal(0)
         for x in range(10):
             if current_time >= self.inspector1.get_complete_time():
                 component1 = self.inspector1.get_random_component_for_inspector()
                 temp_time1 = self.inspector1.process(current_time, component1)
-                print("after inspector1 process: "+str(temp_time1))
+                print("after inspector1 process: " + str(temp_time1))
             else:
                 print("Inspector 1 is still working")
 
@@ -88,9 +90,9 @@ class Factory:
             temp_times = [temp_time1, temp_time2, temp_ws1, temp_ws2, temp_ws3]
             temp_times.sort()
             if current_time != temp_current_time:
-                for i in range(temp_times.count(temp_current_time)-1):
+                for i in range(temp_times.count(temp_current_time) - 1):
                     temp_times.remove(temp_current_time)
-                if temp_times[0]==temp_time1 or temp_times[0]==temp_time2:
+                if temp_times[0] == temp_time1 or temp_times[0] == temp_time2:
                     current_time = temp_times[0]
                 else:
                     current_time += temp_times[0]
@@ -99,9 +101,10 @@ class Factory:
                     temp_times.remove(temp_current_time)
                 current_time = temp_times[0]
 
-            print("\n\nnew current time is: "+str(current_time))
+            print("\n\nnew current time is: " + str(current_time))
 
 
+# main method to run the code
 if __name__ == '__main__':
     factory = Factory()
     factory.simulation()

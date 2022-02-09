@@ -1,3 +1,7 @@
+"""
+  Basic component class to dedicate different components
+"""
+
 
 class Component:
 
@@ -6,4 +10,3 @@ class Component:
 
     def get_name(self):
         return self.name
-    
